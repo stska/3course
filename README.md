@@ -1,2 +1,0 @@
-# 3course
-education
