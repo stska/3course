@@ -38,19 +38,6 @@ public class UsersFragment extends MvpAppCompatFragment implements UsersView, Ba
 
     @InjectPresenter
     UsersPresenter mPresenter;
-    @ProvidePresenter
-    UsersPresenter provideUsersPresenter() {
-        //IGithubUsersRepo usersRepo = new RetrofitGithubUsersRepo((GithubApplication.INSTANCE).getApi());
-        IGithubUsersRepo usersRepo = new RetrofitGithubUsersRepo((GithubApplication.INSTANCE).getApi(),
-                new AndroidNetworkStatus(),
-                Database.getInstance());
-        IGithubUsersForks retrofitGithubUsersForks = new RetrofitGithubUsersForks((GithubApplication.INSTANCE).getApi(),
-                new AndroidNetworkStatus(),
-                Database.getInstance());
-        Router router = GithubApplication.INSTANCE.getRouter();
-
-        return new UsersPresenter(AndroidSchedulers.mainThread(),usersRepo, router,retrofitGithubUsersForks);
-    }
 
     @Nullable
     @Override
@@ -59,6 +46,10 @@ public class UsersFragment extends MvpAppCompatFragment implements UsersView, Ba
         mRecyclerView = (RecyclerView)mView.findViewById(R.id.rv_users);
 
         return mView;
+    }
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     @Override

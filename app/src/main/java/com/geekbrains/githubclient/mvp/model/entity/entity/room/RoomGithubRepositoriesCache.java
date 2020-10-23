@@ -17,8 +17,6 @@ public class RoomGithubRepositoriesCache implements IRoomGithubRepositoriesCache
             List<GithubForks> repos = new ArrayList<>();
             if (roomGithubRepository.size() > 0) {
                 for (RoomGithubRepository roomGithubRep : roomGithubRepository) {
-
-                    // if(roomGithubRep.getUserId().contains(githubUser.getId())) {
                     GithubForks githubFork = new GithubForks(roomGithubRep.getName(),
                             roomGithubRep.getId(),
                             roomGithubRep.forksCount,
@@ -37,7 +35,6 @@ public class RoomGithubRepositoriesCache implements IRoomGithubRepositoriesCache
     public Single<List<GithubForks>> saveReposToDb(String repos_url, IDataSource api, Database d, GithubUser githubUser) {
         return api.getForks(repos_url).flatMap((repos) -> Single.fromCallable(() -> {
             List<RoomGithubRepository> roomGithubRepositories = new ArrayList<>();
-            // List<GithubForks> githubForksList = new ArrayList<>();
 
             for (GithubForks githubForks : repos) {
                 RoomGithubRepository roomGithubRepository = new RoomGithubRepository(githubForks.getId(),

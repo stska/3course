@@ -9,6 +9,8 @@ import com.geekbrains.githubclient.R;
 import com.geekbrains.githubclient.mvp.presenter.MainPresenter;
 import com.geekbrains.githubclient.mvp.view.MainView;
 
+import javax.inject.Inject;
+
 import moxy.MvpAppCompatActivity;
 import moxy.presenter.InjectPresenter;
 import moxy.presenter.ProvidePresenter;
@@ -20,7 +22,8 @@ import switchMap.Operators;
 
 public class MainActivity extends MvpAppCompatActivity implements MainView {
 
-    private NavigatorHolder mNavigatorHolder = GithubApplication.INSTANCE.getNavigatorHolder();
+    @Inject
+    NavigatorHolder navigatorHolder;
     Navigator mNavigator = new SupportAppNavigator(this, getSupportFragmentManager(), R.id.container);
 
     @InjectPresenter
@@ -28,9 +31,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
 
     @ProvidePresenter
     MainPresenter provideMainPresenter() {
-        Router router = ((GithubApplication)GithubApplication.getAppContext()).getRouter();
-
-        return new MainPresenter(router);
+        return new MainPresenter();
     }
 
     @Override
@@ -38,19 +39,20 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Operators.exec();
+        GithubApplication.INSTANCE.getAppComponent().inject(this);
     }
 
     @Override
     protected void onResumeFragments() {
         super.onResumeFragments();
-        mNavigatorHolder.setNavigator(mNavigator);
+        navigatorHolder.setNavigator(mNavigator);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        mNavigatorHolder.removeNavigator();
+        navigatorHolder.removeNavigator();
     }
 
     @Override
