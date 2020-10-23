@@ -14,6 +14,9 @@ import com.geekbrains.githubclient.mvp.view.UsersView;
 import com.geekbrains.githubclient.navigation.Screens;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
+
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.core.Scheduler;
@@ -25,27 +28,25 @@ public class UsersPresenter extends MvpPresenter<UsersView> {
     private static final String TAG = UsersPresenter.class.getSimpleName();
     private String logName;
     private static final boolean VERBOSE = true;
-    // private GithubUserRepo mUsersRepo = new GithubUserRepo();
-    private Router mRouter = GithubApplication.INSTANCE.getRouter();
-
-    private final IGithubUsersRepo USERS_REPO;
-    private final Router ROUTER;
-    private final Scheduler SCHEDULER;
-    // private RetrofitGithubUsersForks retrofitGithubUsersForks;
-    private final IGithubUsersForks RETROFIT_GITHUB_USERS_REPOSITIRIES;
 
 
-    public UsersPresenter(Scheduler scheduler, IGithubUsersRepo usersRepo, Router router, IGithubUsersForks retrofitGithubUsersForks) {
-        SCHEDULER = scheduler;
-        USERS_REPO = usersRepo;
-        ROUTER = router;
-        RETROFIT_GITHUB_USERS_REPOSITIRIES = retrofitGithubUsersForks;
+    @Inject
+    IGithubUsersRepo usersRepo;
 
+    @Inject
+    IGithubUsersForks iGithubUsersForks;
+
+    @Inject
+    Router router;
+    @Inject
+    Scheduler scheduler;
+
+   public UsersPresenter() {
+        GithubApplication.INSTANCE.getAppComponent().inject(this);
     }
 
     class UsersListPresenter implements IUserListPresenter {
         private List<GithubUser> mUsers = new ArrayList<>();
-        private List<GithubForks> mForks = new ArrayList<>();
 
         @Override
         public void onItemClick(UserItemView view) {
@@ -55,9 +56,8 @@ public class UsersPresenter extends MvpPresenter<UsersView> {
                 Log.v(TAG, " onItemClick " + user);
             }
             mUsers.get(view.getPos());
-
-            String urlRepos = mUsers.get(view.getPos()).getReposUrl();
-            loadForks(urlRepos, mUsers.get(view.getPos()));
+             GithubUser user =  mUsers.get(view.getPos());
+            router.navigateTo(new Screens.GitUserFragmentPage(user));
 
         }
 
@@ -93,21 +93,9 @@ public class UsersPresenter extends MvpPresenter<UsersView> {
 
     }
 
-    private void loadForks(String urlRepos, GithubUser githubUser) {
-        RETROFIT_GITHUB_USERS_REPOSITIRIES.getForks(urlRepos, githubUser).observeOn(SCHEDULER).subscribe(f -> {
-            Log.v(TAG, "found some forks");
-            mUserListPresenter.mForks.clear();
-            mUserListPresenter.mForks.addAll(f);
-            mRouter.navigateTo(new Screens.GitUserFragmentPage(f));
-        }, (e) -> {
-            Log.w(TAG, "Error" + e.getMessage());
-        });
-
-    }
-
     private void loadData() {
 
-        USERS_REPO.getUsers().observeOn(SCHEDULER).subscribe(repos -> {
+        usersRepo.getUsers().observeOn(scheduler).subscribe(repos -> {
             mUserListPresenter.mUsers.clear();
             mUserListPresenter.mUsers.addAll(repos);
             getViewState().updateList();
@@ -120,57 +108,8 @@ public class UsersPresenter extends MvpPresenter<UsersView> {
 
 
     public boolean backPressed() {
-        mRouter.exit();
+        router.exit();
         return true;
-    }
-
-    private void setData(UserItemView view, GithubUser user) {
-        final Observer<String> stringObserver = new Observer<String>() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
-                Log.i(TAG, "onSubscribe");
-            }
-
-            @Override
-            public void onNext(@NonNull String s) {
-                Log.i(TAG, "onNext " + s);
-                view.setLogin(s);
-            }
-
-            @Override
-            public void onError(@NonNull Throwable e) {
-                Log.i(TAG, "onError ");
-            }
-
-            @Override
-            public void onComplete() {
-                Log.i(TAG, "onComplete");
-            }
-        };
-    }
-
-    private Observer<List<GithubUser>> getUsersListObserver() {
-        return new Observer<List<GithubUser>>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                Log.i(TAG, "onSubscribe");
-            }
-
-            @Override
-            public void onNext(List<GithubUser> values) {
-                mUserListPresenter.mUsers.addAll(values);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.i(TAG, "onError ");
-            }
-
-            @Override
-            public void onComplete() {
-                Log.i(TAG, "onComplete");
-            }
-        };
     }
 
     private void userList() {
@@ -178,10 +117,3 @@ public class UsersPresenter extends MvpPresenter<UsersView> {
     }
 
 }
-//Вариант 1
-   /*     mUsersRepo.getUsers().concatMap(githubUsers -> Observable.just(githubUsers)).subscribe(
-                (s) -> Log.i(TAG, "onNext " + mUserListPresenter.mUsers.addAll(s)),
-                (e) -> Log.i(TAG, "onError " + e.getMessage()),
-                () -> Log.i(TAG, "onComplete "));  */
-//Вариант 2
-// mUsersRepo.getUsers().subscribe(getUsersListObserver());

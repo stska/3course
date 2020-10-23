@@ -12,7 +12,6 @@ public class GithubUser implements Parcelable {
     String id;
     @Expose
     String avatarUrl;
-    // @Expose String reposUrl;
     @Expose
     String repos_url;
 
@@ -44,9 +43,6 @@ public class GithubUser implements Parcelable {
         }
     };
 
-    /*   public Observable<String> getLogin() {
-           return Observable.just(mLogin);
-       } */
     public String getLogin() {
         return login;
     }

@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.geekbrains.githubclient.R;
 import com.geekbrains.githubclient.mvp.model.entity.entity.GithubForks;
 
+import com.geekbrains.githubclient.mvp.model.entity.entity.GithubUser;
 import com.geekbrains.githubclient.mvp.presenter.UserFragmentPresenter;
 import com.geekbrains.githubclient.mvp.view.UsersView;
 import com.geekbrains.githubclient.ui.BackButtonListener;
@@ -23,10 +24,13 @@ import com.geekbrains.githubclient.ui.adapter.RepoAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import moxy.MvpAppCompatFragment;
 import moxy.presenter.InjectPresenter;
 import moxy.presenter.ProvidePresenter;
+import ru.terrakok.cicerone.Router;
 
 public class GitUserProfileFragment extends MvpAppCompatFragment implements UsersView, BackButtonListener {
     private static final String GIT_USER = "git_user";
@@ -37,19 +41,24 @@ public class GitUserProfileFragment extends MvpAppCompatFragment implements User
 
     @InjectPresenter
     UserFragmentPresenter mPresenter;
+    @Inject
+    Router router;
 
     @ProvidePresenter
     UserFragmentPresenter provideForwardPresenter() {
         assert getArguments() != null;
-
-        return new UserFragmentPresenter(getArguments().getParcelableArrayList(GIT_USER), AndroidSchedulers.mainThread());
+        final GithubUser user = getArguments().getParcelable(GIT_USER);
+       // return new UserFragmentPresenter(getArguments().getParcelableArrayList(GIT_USER), AndroidSchedulers.mainThread());
+        return new UserFragmentPresenter(user);
     }
 
-    public static GitUserProfileFragment getNewInstance(List<GithubForks> mForks) {
-        ArrayList<GithubForks> tmp = new ArrayList<>(mForks);
+  //  public static GitUserProfileFragment getNewInstance(List<GithubForks> mForks) {
+  public static GitUserProfileFragment getNewInstance(GithubUser user) {
+       // ArrayList<GithubForks> tmp = new ArrayList<>(mForks);
         GitUserProfileFragment fragment = new GitUserProfileFragment();
         Bundle arguments = new Bundle();
-        arguments.putParcelableArrayList(GIT_USER, tmp);
+       // arguments.putParcelableArrayList(GIT_USER, tmp);
+      arguments.putParcelable(GIT_USER,  user);
         fragment.setArguments(arguments);
 
         return fragment;
